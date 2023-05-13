@@ -1,25 +1,45 @@
-import logo from './logo.svg';
+import React, { useEffect } from "react";
 import './App.css';
+import Chat from './Chat';
+import Sidebar from './Sidebar';
 
+import { Routes, Route } from "react-router-dom";
+import Login from "./Login";
+import { useStateValue } from "./stateProvider";
+import { auth, provider } from './firebase';
+import { onAuthStateChanged } from "firebase/auth";
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [{ user }, dispatch] = useStateValue();
+    useEffect(() => {
+        onAuthStateChanged(auth, (userAuth) => {
+            dispatch({
+                type: 'SET_USER',
+                user: userAuth
+            })
+        })
+
+    }, [])
+
+    return (
+        <>
+            {!user ? <Login /> : (
+                <div className="App">
+                    <div className="app__body">
+                        {/**Sidebar */}
+                        <Sidebar />
+
+
+                        <Routes>
+                            <Route exact path="/" element={<Chat />} />
+                            <Route path="/room/:roomid" element={<Chat />} />
+                        </Routes>
+                        {/**Body */}
+                    </div>
+                </div>
+            )
+            }
+        </>
+    );
 }
 
 export default App;
